@@ -1,0 +1,39 @@
+@baseUrl = http://localhost:5236
+
+### Registrar usuario
+POST {{baseUrl}}/api/Auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Ana Perez",
+  "email": "ana@example.com",
+  "password": "123456"
+}
+
+### Login
+POST {{baseUrl}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "ana@example.com",
+  "password": "123456"
+}
+
+### Crear tarea (reemplazar TOKEN)
+POST {{baseUrl}}/api/Task
+Content-Type: application/json
+Authorization: Bearer TOKEN
+
+{
+  "title": "Entregar informe mensual",
+  "priorityLevel": 2,
+  "notes": "Revisar cifras de ventas"
+}
+
+### Listar mis tareas (reemplazar TOKEN)
+GET {{baseUrl}}/api/Task
+Authorization: Bearer TOKEN
+
+### Eliminar tarea (reemplazar TOKEN e ID)
+DELETE {{baseUrl}}/api/Task/ID_DE_LA_TAREA
+Authorization: Bearer TOKEN

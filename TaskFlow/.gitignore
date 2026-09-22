@@ -1,0 +1,12 @@
+## .NET
+bin/
+obj/
+*.user
+
+## Credenciales de Firebase 
+Config/firebase-credentials.json
+
+## IDE
+.vs/
+.idea/
+*.suo
