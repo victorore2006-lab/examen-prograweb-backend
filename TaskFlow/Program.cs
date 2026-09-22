@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using TaskFlow.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +41,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddScoped< TaskService>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
