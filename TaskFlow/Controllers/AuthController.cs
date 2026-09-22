@@ -14,7 +14,20 @@ public class AuthController : ControllerBase
     {
         _authService = authService;
     }
-    
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+    {
+        try
+        {
+            var user = await _authService.Register(dto);
+            return Ok(new { user.Id, user.FullName, user.Email });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
