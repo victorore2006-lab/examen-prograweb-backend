@@ -6,8 +6,12 @@ using TaskFlow.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddSingleton<FirebaseService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<TaskService>();
 
 builder.Services.AddControllers();
+
 builder.Services.AddOpenApi(options =>
 {
     
@@ -25,7 +29,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
+            )
         };
     });
 
@@ -47,6 +52,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
     app.MapScalarApiReference(options =>
     {
         options.WithTitle("TaskFlow API")
