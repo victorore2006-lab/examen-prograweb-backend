@@ -1,3 +1,4 @@
+﻿using TaskFlow.DTOs;
 using TaskFlow.Models;
 
 namespace TaskFlow.Services;
@@ -9,6 +10,33 @@ public class TaskService
     public TaskService(FirebaseService firebaseService)
     {
         _firebaseService = firebaseService;
+    }
+
+    public async Task<TaskItem> Create(TaskDto dto, string userId)
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid().ToString(),
+            Title = dto.Title,
+            PriorityLevel = dto.PriorityLevel,
+            Notes = dto.Notes ?? string.Empty,
+            UserId = userId,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _firebaseService.GetCollection("Task")
+            .Document(task.Id)
+            .SetAsync(new Dictionary<string, object>
+            {
+                { "Id", task.Id },
+                { "Title", task.Title },
+                { "PriorityLevel", task.PriorityLevel },
+                { "Notes", task.Notes },
+                { "UserId", task.UserId },
+                { "CreatedAt", task.CreatedAt }
+            });
+
+        return task;
     }
 
     public async Task<List<TaskItem>> GetByUser(string userId)
@@ -23,18 +51,13 @@ public class TaskService
         {
             tasks.Add(MapToTaskItem(doc.ToDictionary()));
         }
-
-        return tasks
-            .OrderByDescending(t => t.CreatedAt)
-            .ToList();
+        
+        return tasks.OrderByDescending(t => t.CreatedAt).ToList();
     }
 
     public async Task<bool> Delete(string id, string userId)
     {
-        var docRef = _firebaseService
-            .GetCollection("Task")
-            .Document(id);
-
+        var docRef = _firebaseService.GetCollection("Task").Document(id);
         var snapshot = await docRef.GetSnapshotAsync();
 
         if (!snapshot.Exists)
@@ -43,14 +66,10 @@ public class TaskService
         var data = snapshot.ToDictionary();
 
         var ownerId = data["UserId"].ToString();
-
         if (ownerId != userId)
-            throw new UnauthorizedAccessException(
-                "Esta tarea no pertenece al usuario"
-            );
+            throw new UnauthorizedAccessException("Esta tarea no pertenece al usuario");
 
         await docRef.DeleteAsync();
-
         return true;
     }
 
@@ -61,13 +80,9 @@ public class TaskService
             Id = data["Id"].ToString()!,
             Title = data["Title"].ToString()!,
             PriorityLevel = Convert.ToInt32(data["PriorityLevel"]),
-            Notes = data.TryGetValue("Notes", out var notes)
-                ? notes.ToString()!
-                : string.Empty,
+            Notes = data.TryGetValue("Notes", out var notes) ? notes.ToString()! : string.Empty,
             UserId = data["UserId"].ToString()!,
-            CreatedAt =
-                ((Google.Cloud.Firestore.Timestamp)data["CreatedAt"])
-                .ToDateTime()
+            CreatedAt = ((Google.Cloud.Firestore.Timestamp)data["CreatedAt"]).ToDateTime()
         };
     }
 }

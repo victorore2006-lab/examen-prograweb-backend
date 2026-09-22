@@ -46,6 +46,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddScoped< TaskService>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
