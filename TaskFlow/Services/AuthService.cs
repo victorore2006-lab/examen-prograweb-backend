@@ -18,7 +18,40 @@ public class AuthService
         _firebaseService = firebaseService;
         _configuration = configuration;
     }
-    
+
+    public async Task<User> Register(RegisterDto registerDto)
+    {
+        var collection = _firebaseService.GetCollection("user");
+
+        var existing = await collection
+            .WhereEqualTo("Email", registerDto.Email)
+            .GetSnapshotAsync();
+
+        if (existing.Count > 0)
+            throw new Exception("Ya existe un usuario con ese correo");
+
+        var user = new User
+        {
+            Id = Guid.NewGuid().ToString(),
+            FullName = registerDto.FullName,
+            Email = registerDto.Email,
+            PasswordHash = HashPassword(registerDto.Password),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await collection.Document(user.Id).SetAsync(new Dictionary<string, object>
+        {
+            { "Id", user.Id },
+            { "FullName", user.FullName },
+            { "Email", user.Email },
+            { "PasswordHash", user.PasswordHash },
+            { "CreatedAt", user.CreatedAt },
+        });
+
+        return user;
+    }
+
+
     public async Task<string> Login(LoginDto loginDto)
     {
         var collection = _firebaseService.GetCollection("user");
